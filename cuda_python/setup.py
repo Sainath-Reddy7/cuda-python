@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import subprocess
 import tomllib
 from pathlib import Path
 
@@ -15,9 +16,20 @@ from setuptools_scm import get_version
 with Path(__file__).with_name("pyproject.toml").open("rb") as stream:
     scm_selectors = tomllib.load(stream)["tool"]["cuda-python"]["scm-describe-match-by-major"]
 
-# Preserve the current-major default for ordinary source builds. CI selects
-# a major explicitly when building either metapackage.
-build_major = os.environ.get("CUDA_PYTHON_BUILD_MAJOR", "13")
+# CI selects either major explicitly. Direct tagged builds follow the tag;
+# untagged checkouts and commits tagged for both majors default to CUDA 13.
+build_major = os.environ.get("CUDA_PYTHON_BUILD_MAJOR")
+if build_major is None:
+    build_major = "13"
+    source_root = Path(__file__).resolve().parent.parent
+    if (source_root / ".git").exists():
+        tags = subprocess.check_output(
+            ["git", "tag", "--points-at", "HEAD", "--list", "v12.*", "v13.*"],  # noqa: S607
+            cwd=source_root,
+            text=True,
+        ).splitlines()
+        if any(tag.startswith("v12.") for tag in tags) and not any(tag.startswith("v13.") for tag in tags):
+            build_major = "12"
 if build_major not in {"12", "13"}:
     raise ValueError(f"CUDA_PYTHON_BUILD_MAJOR must be 12 or 13, got {build_major!r}")
 
