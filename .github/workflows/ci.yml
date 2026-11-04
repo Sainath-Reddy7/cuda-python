@@ -107,7 +107,7 @@ jobs:
       - name: Set up Python for CI tools
         uses: ./.github/actions/setup-hardened-python
         with:
-          python-version: "3.12"
+          python-version: "3.11"
 
       - name: Install CI tool test dependencies
         run: python3 -m pip install -e './ci[test]'
@@ -283,7 +283,7 @@ jobs:
       - name: Validate bindings package metadata and test CI tools
         run: |
           python3 -m ci.tools.bindings_config --check-package-metadata
-          python3 -m pytest -q --noconftest ci/tools/tests
+          python3 -m pytest -q ci/tools/tests
 
       - name: Compute CI workplan
         id: workplan
