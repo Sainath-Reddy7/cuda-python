@@ -157,10 +157,10 @@ def check_package_metadata(config: BindingsConfig, repo_root: Path) -> None:
         if command.count("--match") != 1:
             raise ValueError(f"{path} must specify one git_describe_command --match selector")
         selector = command[command.index("--match") + 1]
-        expected_selector = f"v{package.ctk_target}.*"
+        expected_selector = f"v{package.cuda_major}.*"
         if selector != expected_selector:
             raise ValueError(
-                f"{path} --match must select registered CUDA {package.ctk_target} "
+                f"{path} --match must select registered CUDA major {package.cuda_major} "
                 f"using {expected_selector!r} for the {package.release_status} root, got {selector!r}"
             )
         selectors[package.cuda_major] = selector
